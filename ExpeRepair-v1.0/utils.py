@@ -222,7 +222,13 @@ def run_string_cmd_in_conda(
     conda_root_dir = pdirname(pdirname(conda_bin_path))
     conda_script_path = pjoin(conda_root_dir, "etc", "profile.d", "conda.sh")
     command = command.replace("'", '"')
-    conda_cmd = f"bash -i -c 'source {conda_script_path} ; conda activate {env_name} ; {command} ; conda deactivate'"
+    # NOTE: `conda deactivate` can return nonzero in non-interactive shells
+    # even when the payload command succeeded, so capture the payload's
+    # return code first and exit with it explicitly.
+    conda_cmd = (
+        f"bash -i -c 'source {conda_script_path} ; conda activate {env_name} ; "
+        f"{command} ; rc=$? ; conda deactivate >/dev/null 2>&1 ; exit $rc'"
+    )
     log_and_print(f"Running command: {conda_cmd}")
     return subprocess.run(conda_cmd, shell=True, **kwargs)
 

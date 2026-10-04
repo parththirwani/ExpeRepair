@@ -448,7 +448,7 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="o4-mini",
+        default="gpt-5.6-luna",
     )
 
     args = parser.parse_args()

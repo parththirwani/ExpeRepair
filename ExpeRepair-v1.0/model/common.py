@@ -102,21 +102,21 @@ def set_model(model_name: str):
 GPT4o_MODEL: Model
 def set_gpt_model():
     global GPT4o_MODEL
-    GPT4o_MODEL = MODEL_HUB['gpt-4o-2024-11-20']
+    GPT4o_MODEL = MODEL_HUB['gpt-5.6-luna']
     GPT4o_MODEL.setup()
 
 
 GPTo4_MODEL: Model
 def set_gpto4_model():
     global GPTo4_MODEL
-    GPTo4_MODEL = MODEL_HUB['o4-mini']
+    GPTo4_MODEL = MODEL_HUB['gpt-5.6-luna']
     GPTo4_MODEL.setup()
 
 
 GPTo3_MODEL: Model
 def set_gpto3_model():
     global GPTo3_MODEL
-    GPTo3_MODEL = MODEL_HUB['o3-mini']
+    GPTo3_MODEL = MODEL_HUB['gpt-5.6-luna']
     GPTo3_MODEL.setup()
 
 

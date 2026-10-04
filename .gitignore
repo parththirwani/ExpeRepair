@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+testbed/lite_testbed/
+testbed/repo_structure/
+testbed/django.git/
+testbed/*.log
+data/
+ExpeRepair-v1.0/results/smoke_*/

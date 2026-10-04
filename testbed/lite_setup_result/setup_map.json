@@ -1,0 +1,156 @@
+{
+  "django__django-10914": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-10914",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 test_utils.tests"
+  },
+  "django__django-10924": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-10924",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 model_fields.test_filepathfield"
+  },
+  "django__django-11001": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11001",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 expressions.tests"
+  },
+  "django__django-11019": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11019",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 admin_inlines.tests admin_widgets.test_autocomplete_widget forms_tests.tests.test_media"
+  },
+  "django__django-11039": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11039",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 migrations.test_commands"
+  },
+  "django__django-11049": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11049",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 model_fields.test_durationfield"
+  },
+  "django__django-11099": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11099",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 auth_tests.test_validators"
+  },
+  "django__django-11133": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11133",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 httpwrappers.tests"
+  },
+  "django__django-11179": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11179",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 delete.tests"
+  },
+  "django__django-11283": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11283",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 auth_tests.test_migrations"
+  },
+  "django__django-11422": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11422",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 utils_tests.test_autoreload"
+  },
+  "django__django-11564": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11564",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 file_storage.tests settings_tests.tests"
+  },
+  "django__django-11583": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11583",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 utils_tests.test_autoreload"
+  },
+  "django__django-11620": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11620",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 view_tests.tests.test_debug"
+  },
+  "django__django-11630": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11630",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 check_framework.test_model_checks"
+  },
+  "django__django-11742": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11742",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 invalid_models_tests.test_ordinary_fields"
+  },
+  "django__django-11797": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11797",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 lookup.tests"
+  },
+  "django__django-11815": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11815",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 migrations.test_writer"
+  },
+  "django__django-11848": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11848",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 utils_tests.test_http"
+  },
+  "django__django-11905": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11905",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 lookup.models lookup.tests"
+  },
+  "django__django-11910": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11910",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 migrations.test_autodetector"
+  },
+  "django__django-11964": {
+    "repo_path": "/home/too_geeky/projects/research/ExpeRepair/testbed/lite_testbed/django__django/setup_django__django-11964",
+    "env_name": "exprepair-django-django-py36",
+    "pre_install": [],
+    "install": "python -m pip install -e .",
+    "test_cmd": "./tests/runtests.py --verbosity 2 model_enums.tests"
+  }
+}

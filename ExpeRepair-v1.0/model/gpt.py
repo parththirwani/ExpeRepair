@@ -269,6 +269,18 @@ class OpenaiModel(Model):
         print('=================================', temperature, n, '=================================')
 
         assert self.client is not None
+
+        # --- normalize response_format for new OpenAI SDKs (accept dict) ---
+        def _normalize_response_format(fmt: Optional[Union[str, Dict[str, Any]]]):
+            if not fmt or fmt == "text":
+                return None
+            if isinstance(fmt, dict):
+                return fmt
+            if isinstance(fmt, str):
+                return {"type": fmt}
+            return None
+        _rf = _normalize_response_format(response_format)
+
         try:
             if tools is not None and len(tools) == 1:
                 # there is only one tool => force the model to use it

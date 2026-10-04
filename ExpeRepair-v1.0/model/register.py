@@ -1,9 +1,10 @@
-from model import claude, common, gpt, claude_3rd_party
+from model import claude, common, gpt, claude_3rd_party, luna
 
 def register_all_models() -> None:
     """
     Register all models. This is called in main.
     """
+    common.register_model(luna.Gpt56Luna())
     common.register_model(claude.Claude4_20250514())
     common.register_model(claude.Claude_20241022())
     common.register_model(claude_3rd_party.Claude4_20250514X())

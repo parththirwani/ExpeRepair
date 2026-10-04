@@ -208,6 +208,7 @@ def average_rank(rank_lists):
 
 def select_patch_initial(client_name, category_results, test_content,
                          reproduce_stdout, reproduce_stderr, repo_name):
+    api_base = None
     if client_name == 'client_openai':
         key = os.getenv("OPENAI_KEY")
         model = 'o4-mini'
@@ -215,6 +216,11 @@ def select_patch_initial(client_name, category_results, test_content,
     elif client_name == 'client_claude':
         key = os.getenv("CLAUDE_KEY")
         model = 'anthropic/claude-sonnet-4-20250514'
+
+    elif client_name == 'client_proxy':
+        key = os.getenv("AZURE_LLM_API_KEY")
+        model = 'gpt-5.6-luna'
+        api_base = os.getenv("AZURE_LLM_BASE_URL")
 
     else:
         assert 1 == 2
@@ -239,7 +245,8 @@ def select_patch_initial(client_name, category_results, test_content,
         try:
             completion = litellm.completion(
                 model=model,
-                messages=message_list, api_key=key
+                messages=message_list, api_key=key,
+                api_base=api_base,
             )
             response = completion.choices[0].message.content
             select_result = ase_extract_selection(response, ['correct_patch'])
@@ -255,6 +262,7 @@ def select_patch_initial(client_name, category_results, test_content,
 
 
 def select_patch_second(client_name, patch_lines, repo_name):
+    api_base = None
     if client_name == 'client_openai':
         key = os.getenv("OPENAI_KEY")
         model = 'o4-mini'
@@ -262,6 +270,11 @@ def select_patch_second(client_name, patch_lines, repo_name):
     elif client_name == 'client_claude':
         key = os.getenv("CLAUDE_KEY")
         model = 'anthropic/claude-sonnet-4-20250514'
+
+    elif client_name == 'client_proxy':
+        key = os.getenv("AZURE_LLM_API_KEY")
+        model = 'gpt-5.6-luna'
+        api_base = os.getenv("AZURE_LLM_BASE_URL")
 
     else:
         assert 1 == 2
@@ -309,7 +322,8 @@ def select_patch_second(client_name, patch_lines, repo_name):
             try:
                 completion = litellm.completion(
                     model=model,
-                    messages=message_list, api_key=key
+                    messages=message_list, api_key=key,
+                    api_base=api_base,
                 )
                 response = completion.choices[0].message.content
                 select_result = ase_extract_selection(response, ['rank_patch'])
@@ -328,7 +342,8 @@ def select_patch_second(client_name, patch_lines, repo_name):
 
 
 if __name__ == '__main__':
-    client_name = 'client_openai'
+    client_name = 'client_proxy'
+    # client_name = 'client_openai'
     # client_name = 'client_claude'
     # client_name = 'client_deepseek'
     repo_list = ['astropy', 'flask', 'pylint', 'pytest', 'requests', 'scikit-learn', 'seaborn', 'sphinx', 'xarray', 'django', 'matplotlib', 'sympy']
