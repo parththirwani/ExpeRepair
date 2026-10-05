@@ -1238,6 +1238,9 @@ def filter_patch_experiences(issue_description, experiences):
                 if new_result is True:
                     successful_experiences.append({
                         "issue_description": issue_description,
+                        "task_id": experiences[i].get("task_id", ""),
+                        "oracle_F2P": experiences[i].get("oracle_F2P", []),
+                        "oracle_P2P": experiences[i].get("oracle_P2P", []),
                         "old_patch": experiences[i]["old_patch"],
                         "old_result": experiences[i]["old_result"],
                         "new_patch": experiences[j]["new_patch"],

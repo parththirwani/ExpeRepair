@@ -231,8 +231,12 @@ class ReviewManager:
                 assert select_idx in correct_list
                 selected_patch = patch_content_list[select_idx]
                 # todo get and save experience
+                # Phase 1 provenance: task_id + oracle for offline label-noise scoring
                 cur_exp = {
                     # "issue_description": self.task.get_issue_statement().strip(),
+                    "task_id": self.task.task_id,
+                    "oracle_F2P": list(getattr(self.task, "testcases_failing", [])),
+                    "oracle_P2P": list(getattr(self.task, "testcases_passing", [])),
                     "old_patch": old_generated_patch,
                     "old_result": False,
                     "new_patch": selected_patch,
@@ -336,8 +340,12 @@ class ReviewManager:
                 selected_patched_repro = patched_repro_list[select_idx]
 
                 # todo get and save experience
+                # Phase 1 provenance: task_id + oracle for offline label-noise scoring
                 cur_exp = {
                     # "issue_description": self.task.get_issue_statement().strip(),
+                    "task_id": self.task.task_id,
+                    "oracle_F2P": list(getattr(self.task, "testcases_failing", [])),
+                    "oracle_P2P": list(getattr(self.task, "testcases_passing", [])),
                     "old_patch": old_generated_patch,
                     "old_result": False,
                     "new_patch": selected_patch,

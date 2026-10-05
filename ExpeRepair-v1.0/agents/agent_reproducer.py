@@ -272,8 +272,12 @@ class TestAgent:
             reproducible, guard_thread = self._reproduction_is_correct(initial_thread, test_content, repro_result)
 
             # todo get and save experience
+            # Phase 1 provenance: task_id + oracle for offline label-noise scoring
             cur_exp = {
                 # "issue_description": self.task.get_issue_statement().strip(),
+                "task_id": self.task.task_id,
+                "oracle_F2P": list(getattr(self.task, "testcases_failing", [])),
+                "oracle_P2P": list(getattr(self.task, "testcases_passing", [])),
                 "old_test": old_test,
                 "old_exec_result": old_exec_result.stdout.strip() + '\n' + old_exec_result.stderr.strip() if old_exec_result != "" else old_exec_result,
                 "old_returncode": old_exec_result.returncode if old_exec_result != "" else old_exec_result,
@@ -394,8 +398,12 @@ class TestAgent:
             reproducible, guard_thread = self._reproduction_is_correct(initial_thread, test_content, repro_result)
 
             # todo get and save experience
+            # Phase 1 provenance: task_id + oracle for offline label-noise scoring
             cur_exp = {
                 # "issue_description": self.task.get_issue_statement().strip(),
+                "task_id": self.task.task_id,
+                "oracle_F2P": list(getattr(self.task, "testcases_failing", [])),
+                "oracle_P2P": list(getattr(self.task, "testcases_passing", [])),
                 "old_test": old_test,
                 "old_exec_result": old_exec_result.stdout.strip() + '\n' + old_exec_result.stderr.strip() if old_exec_result != "" else old_exec_result,
                 "old_returncode": old_exec_result.returncode if old_exec_result != "" else old_exec_result,
@@ -1152,6 +1160,9 @@ def filter_returncode_experiences(issue_description, experiences):
                          experiences[j].get("new_exec_result", ""))):
                     successful_experiences.append({
                         "issue_description": issue_description,
+                        "task_id": experiences[i].get("task_id", ""),
+                        "oracle_F2P": experiences[i].get("oracle_F2P", []),
+                        "oracle_P2P": experiences[i].get("oracle_P2P", []),
                         "old_test": experiences[i]["old_test"],
                         "old_exec_result": experiences[i]["old_exec_result"],
                         "old_returncode": experiences[i]["old_returncode"],
