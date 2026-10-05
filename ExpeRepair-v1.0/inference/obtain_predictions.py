@@ -1,16 +1,40 @@
+import argparse
 import os
 import json
 
 if __name__ == '__main__':
-    repo_list = ['astropy', 'flask', 'pylint', 'pytest', 'requests', 'scikit-learn', 'seaborn', 'sphinx', 'xarray', 'django', 'sympy', 'matplotlib']
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--validation-dir", type=str, default="results/validation_example",
+                        help="Directory holding <repo>/<task_id>/ranked_final_patch.jsonl files.")
+    parser.add_argument("--repos", type=str, nargs="*", default=None,
+                        help="Repos to collect. Defaults to the full hardcoded list.")
+    parser.add_argument("--task-list-file", type=str, default=None,
+                        help="Only collect tasks listed in this file (one id per line).")
+    parser.add_argument("--preds-file", type=str, default="results/preds_example/final_0.jsonl",
+                        help="Output predictions file (overwritten).")
+    args = parser.parse_args()
+
+    default_repos = ['astropy', 'flask', 'pylint', 'pytest', 'requests', 'scikit-learn', 'seaborn', 'sphinx', 'xarray', 'django', 'sympy', 'matplotlib']
+    repo_list = args.repos if args.repos else default_repos
+
+    only_tasks = None
+    if args.task_list_file is not None:
+        with open(args.task_list_file) as f:
+            only_tasks = {line.strip() for line in f if line.strip()}
+
     generated_patch = {}
     for repo_name in repo_list:
     # repo_name = 'django'
-        directory = f"results/validation_example/{repo_name}"
+        directory = f"{args.validation_dir}/{repo_name}"
+        if not os.path.isdir(directory):
+            print(f"Skipping {repo_name}: {directory} not found.")
+            continue
 
 
         for task_id in os.listdir(directory):
-            # if task_id not in ['psf__requests-2148', 'pytest-dev__pytest-6116', 'matplotlib__matplotlib-23562', 'django__django-12470', 'scikit-learn__scikit-learn-13497', 'pylint-dev__pylint-7993', 'django__django-13448', 'matplotlib__matplotlib-23563', 'django__django-13551', 'scikit-learn__scikit-learn-14087', 'mwaskom__seaborn-3407', 'matplotlib__matplotlib-25332', 'django__django-12589', 'django__django-12747', 'matplotlib__matplotlib-24265', 'pytest-dev__pytest-5103', 'sympy__sympy-13915', 'sympy__sympy-14817', 'sympy__sympy-20049', 'django__django-13964', 'django__django-11797', 'sympy__sympy-21627', 'sympy__sympy-21612', 'pytest-dev__pytest-7220', 'django__django-14534', 'django__django-16229', 'django__django-12497', 'sympy__sympy-19487', 'django__django-11620', 'psf__requests-2674', 'sympy__sympy-12236', 'pytest-dev__pytest-8906', 'sympy__sympy-22840', 'django__django-12308', 'matplotlib__matplotlib-23987', 'mwaskom__seaborn-2848', 'django__django-12708', 'django__django-16400', 'pytest-dev__pytest-7168', 'sympy__sympy-16503', 'pytest-dev__pytest-5413']:
+            if only_tasks is not None and task_id not in only_tasks:
+                continue
+            # if task_id not in ['psf__requests-2148', ...]:
             #     continue
             with open(directory + '/' + task_id + '/ranked_final_patch.jsonl', 'r', encoding='utf-8') as f:
                 data_lines = f.readlines()
@@ -21,10 +45,11 @@ if __name__ == '__main__':
 
     print(len(generated_patch.keys()))
 
+    os.makedirs(os.path.dirname(args.preds_file) or ".", exist_ok=True)
     for task_id in generated_patch.keys():
         patch_list = generated_patch[task_id]
         for num_idx in list(range(len(patch_list)))[:1]:
-            with open(f'results/preds_example/final_{num_idx}.jsonl', 'a') as w:
+            with open(args.preds_file, 'a') as w:
                 w.write(
                     json.dumps(
                         {

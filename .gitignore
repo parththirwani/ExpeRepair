@@ -6,3 +6,5 @@ testbed/django.git/
 testbed/*.log
 data/
 ExpeRepair-v1.0/results/smoke_*/
+ExpeRepair-v1.0/results/phase0_*/
+ExpeRepair-v1.0/results/phase0_preds.jsonl

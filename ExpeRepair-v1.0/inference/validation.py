@@ -342,19 +342,53 @@ def select_patch_second(client_name, patch_lines, repo_name):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--generate-dir", type=str, default="results/generate_example",
+                        help="Directory holding <repo>/<task_id>/result_*_patch_*_test.jsonl files.")
+    parser.add_argument("--validation-dir", type=str, default="results/validation_example",
+                        help="Directory to write per-task validation outputs.")
+    parser.add_argument("--reproduce-dir", type=str, default=None,
+                        help="Directory holding reproduce outputs. Defaults to --generate-dir with 'generate' replaced by 'reproduce'.")
+    parser.add_argument("--repos", type=str, nargs="*", default=None,
+                        help="Repos to validate. Defaults to the full hardcoded list.")
+    parser.add_argument("--task-list-file", type=str, default=None,
+                        help="Only validate tasks listed in this file (one id per line).")
+    parser.add_argument("--task-id", type=str, default=None,
+                        help="Only validate this single task.")
+    vargs = parser.parse_args()
+
     client_name = 'client_proxy'
     # client_name = 'client_openai'
     # client_name = 'client_claude'
     # client_name = 'client_deepseek'
-    repo_list = ['astropy', 'flask', 'pylint', 'pytest', 'requests', 'scikit-learn', 'seaborn', 'sphinx', 'xarray', 'django', 'matplotlib', 'sympy']
+    default_repos = ['astropy', 'flask', 'pylint', 'pytest', 'requests', 'scikit-learn', 'seaborn', 'sphinx', 'xarray', 'django', 'matplotlib', 'sympy']
+    repo_list = vargs.repos if vargs.repos else default_repos
+
+    only_tasks = None
+    if vargs.task_list_file is not None:
+        with open(vargs.task_list_file) as f:
+            only_tasks = {line.strip() for line in f if line.strip()}
+    if vargs.task_id is not None:
+        only_tasks = {vargs.task_id}
 
     for repo_name in repo_list:
         print('=========================', repo_name, '=================================')
-        directory = f"results/generate_example/{repo_name}"
-        validation_directory = f"results/validation_example/{repo_name}"
+        directory = f"{vargs.generate_dir}/{repo_name}"
+        validation_directory = f"{vargs.validation_dir}/{repo_name}"
+        if not os.path.isdir(directory):
+            print(f"Skipping {repo_name}: {directory} not found.")
+            continue
+
+        if vargs.reproduce_dir is not None:
+            reproduce_base = f"{vargs.reproduce_dir}/{repo_name}"
+        else:
+            reproduce_base = directory.replace('generate', 'reproduce')
 
         # for task_id in os.listdir(directory)[:3]:
         for task_id in os.listdir(directory):
+            if only_tasks is not None and task_id not in only_tasks:
+                continue
             print('Cur Task: ', task_id)
             task_path = validation_directory + '/' + task_id
             if os.path.exists(task_path):
@@ -393,7 +427,7 @@ if __name__ == '__main__':
                     category_results.append(key)
                     category_items[i] = group
 
-                with open(directory.replace('generate', 'reproduce') + f'/{task_id}/reproduce_outputs.jsonl', 'r') as f:
+                with open(reproduce_base + f'/{task_id}/reproduce_outputs.jsonl', 'r') as f:
                     reproduce_lines = f.readlines()
                 assert len(reproduce_lines) == 1
 

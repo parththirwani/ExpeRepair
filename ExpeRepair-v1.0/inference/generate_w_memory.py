@@ -285,6 +285,10 @@ def generate(tasks, all_setup, all_taskinfo, args):
     with open('swe_regression_test.json', 'r') as f:
         regression_dict = json.load(f)
 
+    # NOTE: keep the base folders intact across loop iterations; the per-task
+    # paths are derived from the bases each time (mutating args.reproduce_folder
+    # in place breaks multi-task runs after the first task).
+    reproduce_folder_base = args.reproduce_folder
     if args.num_threads == 1:
         for task, setup_info, task_info in tqdm(zip(tasks, all_setup, all_taskinfo), colour="MAGENTA"):
             file_list = regression_dict[task.task_id]
@@ -294,10 +298,10 @@ def generate(tasks, all_setup, all_taskinfo, args):
                 test_file_path = None
 
             repo_name = task.repo_name.split('/')[-1]
-            args.last_step_reproduce = f'{args.reproduce_folder}/{repo_name}/{task.task_id}/reproduce_outputs.jsonl'
+            args.last_step_reproduce = f'{reproduce_folder_base}/{repo_name}/{task.task_id}/reproduce_outputs.jsonl'
             args.last_step_loc = f'{args.localize_folder}/{repo_name}/{task.task_id}/localize_patch_outputs.jsonl'
             args.last_step_search = f'{args.localize_folder}/{repo_name}/{task.task_id}/search'
-            args.reproduce_folder = f'{args.reproduce_folder}/{repo_name}/{task.task_id}'
+            args.reproduce_folder = f'{reproduce_folder_base}/{repo_name}/{task.task_id}'
 
             existing_reproduce_test = load_existing_reproduce_test(args.last_step_reproduce)
             existing_bug_loc = load_existing_bug_locs(args.last_step_loc)
