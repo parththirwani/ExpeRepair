@@ -290,6 +290,17 @@ class TestAgent:
 
             experiences.append(cur_exp)
 
+            # Phase 2: run memory gate on the candidate entry
+            from memory_gate.gate import gate_candidate, MemoryGateMode
+            from memory_gate.provenance import test_patch_overlap
+            gate_result = gate_candidate(
+                entry=cur_exp,
+                issue_text=self.task.get_issue_statement().strip(),
+                task_dir=self.task_dir,
+                task=self.task,
+                regression_test_file=getattr(self.task, "regression_test_file", None),
+            )
+
             # with open(exp_path, "a") as ff:
             #     ff.write(json.dumps(cur_exp) + "\n")
 
@@ -415,6 +426,17 @@ class TestAgent:
             }
 
             experiences.append(cur_exp)
+
+            # Phase 2: run memory gate on the candidate entry
+            from memory_gate.gate import gate_candidate, MemoryGateMode
+            from memory_gate.provenance import test_patch_overlap
+            gate_result = gate_candidate(
+                entry=cur_exp,
+                issue_text=self.task.get_issue_statement().strip(),
+                task_dir=self.task_dir,
+                task=self.task,
+                regression_test_file=getattr(self.task, "regression_test_file", None),
+            )
 
             # with open(exp_path, "a") as ff:
             #     ff.write(json.dumps(cur_exp) + "\n")
@@ -1217,11 +1239,17 @@ def filter_successful_experiences(issue_description, experiences):
 
 
 def save_experiences(repo_name, task_dir, issue_description, exp_name):
+    import config as _cfg
     exp_directory = '/'.join(task_dir.split('/')[:-1])
     print('test_exp_dir:', exp_directory)
     total_exps = []
+    # Phase 2: in gated memory modes, load only promoted entries
+    exp_file_name = "promoted.jsonl" if _cfg.memory_mode in ("gated", "gated-provenance", "gated-execution") else f"{exp_name}.jsonl"
     for task_id in os.listdir(exp_directory):
-        with open(exp_directory + '/' + task_id + f'/{exp_name}.jsonl', 'r') as f:
+        exp_path = exp_directory + '/' + task_id + f'/{exp_file_name}'
+        if not os.path.exists(exp_path):
+            continue
+        with open(exp_path, 'r') as f:
             exp_lines = f.readlines()
 
         for line in exp_lines:

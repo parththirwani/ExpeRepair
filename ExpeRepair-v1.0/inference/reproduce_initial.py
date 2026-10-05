@@ -4,6 +4,7 @@ import os
 
 from tqdm import tqdm
 
+import config
 from agents.agent_reproducer import TestAgent
 from log import print_banner, print_with_time, print_issue
 from model import common
@@ -104,6 +105,8 @@ def reproduce(tasks, args):
     common.set_model(args.model)
     # common.set_gpt_model()
     common.set_gpto4_model()
+    if hasattr(args, 'memory_mode') and args.memory_mode in {'none', 'baseline', 'gated', 'gated-provenance', 'gated-execution'}:
+        config.memory_mode = args.memory_mode
     with open('swe_regression_test.json', 'r') as f:
         regression_dict = json.load(f)
 
@@ -225,6 +228,13 @@ def main():
         "--model",
         type=str,
         default="gpt-5.6-luna",
+    )
+    parser.add_argument(
+        "--memory-mode",
+        type=str,
+        default="baseline",
+        choices=["none", "baseline", "gated", "gated-provenance", "gated-execution"],
+        help="Memory gate mode.",
     )
 
     args = parser.parse_args()

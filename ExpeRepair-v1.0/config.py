@@ -33,6 +33,9 @@ only_save_sbfl_result: bool = False
 # A special mode to only generate reproducer tests and exit
 only_reproduce: bool = False
 
+# Memory gate mode: "none", "baseline", "gated", "gated-provenance", "gated-execution"
+memory_mode: str = "baseline"
+
 # A special mode to only evaluate a reproducer test
 only_eval_reproducer: bool = False
 

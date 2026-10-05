@@ -244,6 +244,14 @@ class ReviewManager:
                 }
 
                 experiences.append(cur_exp)
+                # Phase 2: run memory gate on candidate patch entry
+                from memory_gate.gate import gate_candidate, MemoryGateMode
+                gate_candidate(
+                    entry=cur_exp,
+                    issue_text=self.task.get_issue_statement().strip(),
+                    task_dir=self.output_dir,
+                    task=self.task,
+                )
                 # TODO expand patches
                 expand_patch_list = []
                 for (temp_patch, temp_patched_repro) in passed_patch_repro:
@@ -353,6 +361,14 @@ class ReviewManager:
                 }
 
                 experiences.append(cur_exp)
+                # Phase 2: run memory gate on candidate patch entry
+                from memory_gate.gate import gate_candidate, MemoryGateMode
+                gate_candidate(
+                    entry=cur_exp,
+                    issue_text=self.task.get_issue_statement().strip(),
+                    task_dir=self.output_dir,
+                    task=self.task,
+                )
 
                 old_generated_patch = selected_patch
 

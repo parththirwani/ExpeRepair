@@ -1142,13 +1142,16 @@ def get_experiences_patch(issue_description, patch_content, repo_name, task_dir,
 
 
 def save_experiences_patch(repo_name, task_dir, issue_description, exp_name):
+    import config as _cfg
     exp_directory = '/'.join(task_dir.split('/')[:-1])
     print('patch_exp_dir:', exp_directory)
     total_exps = []
+    exp_file_name = "promoted.jsonl" if _cfg.memory_mode in ("gated", "gated-provenance", "gated-execution") else f"{exp_name}.jsonl"
     for task_id in os.listdir(exp_directory):
-        if not os.path.isfile(exp_directory + '/' + task_id + f'/{exp_name}.jsonl'):
+        exp_path = exp_directory + '/' + task_id + f'/{exp_file_name}'
+        if not os.path.isfile(exp_path):
             continue
-        with open(exp_directory + '/' + task_id + f'/{exp_name}.jsonl', 'r') as f:
+        with open(exp_path, 'r') as f:
             exp_lines = f.readlines()
 
         for line in exp_lines:
