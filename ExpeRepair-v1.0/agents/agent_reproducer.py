@@ -1010,6 +1010,25 @@ def get_experiences(issue_description, test_content, repro_result, repo_name, ta
             prompt_exps.append(temp_exp)
             prompt_scores.append(temp_score)
 
+    # Phase 3: log retrieval results for attack measurement
+    try:
+        query_task_id = ""
+        query_dir = Path(task_dir)
+        if query_dir.name:
+            query_task_id = query_dir.name
+        log_entry = {
+            "query_task_id": query_task_id,
+            "mode": "reproduce",
+            "retrieved_ids": [e.get("issue_description", "")[:80] for e in prompt_exps],
+            "retrieved_scores": prompt_scores,
+            "num_candidates": len(filter_kb),
+        }
+        log_path = query_dir / "retrieval_log.jsonl"
+        with open(log_path, "a") as _lf:
+            _lf.write(json.dumps(log_entry) + "\n")
+    except Exception:
+        pass
+
     return prompt_exps, prompt_scores
 
 
@@ -1251,6 +1270,17 @@ def save_experiences(repo_name, task_dir, issue_description, exp_name):
             continue
         with open(exp_path, 'r') as f:
             exp_lines = f.readlines()
+        # Phase 3: stream-order cutoff — skip entries newer than current task
+        current_time = _cfg.current_created_at
+        if current_time:
+            try:
+                exp_entry = json.loads(exp_lines[0]) if exp_lines else {}
+                exp_time = exp_entry.get('time', '')
+                if exp_time and exp_time >= current_time:
+                    print(f'  skip {task_id}: exp_time={exp_time} >= current={current_time}')
+                    continue
+            except (json.JSONDecodeError, IndexError):
+                pass
 
         for line in exp_lines:
             line = json.loads(line)

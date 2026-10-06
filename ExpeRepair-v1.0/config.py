@@ -36,6 +36,10 @@ only_reproduce: bool = False
 # Memory gate mode: "none", "baseline", "gated", "gated-provenance", "gated-execution"
 memory_mode: str = "baseline"
 
+# Stream-order cutoff for memory retrieval (ISO date, e.g. "2019-01-30T13:13:20Z")
+# Only entries with created_at earlier than this are loaded by save_experiences.
+current_created_at: str = ""
+
 # A special mode to only evaluate a reproducer test
 only_eval_reproducer: bool = False
 

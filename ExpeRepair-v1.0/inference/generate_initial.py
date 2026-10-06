@@ -300,6 +300,8 @@ def generate(tasks, all_setup, all_taskinfo, args):
             else:
                 test_file_path = None
 
+            config.current_created_at = task_info.get('created_at', '') if task_info else ''
+
             repo_name = task.repo_name.split('/')[-1]
             args.last_step_reproduce = f'{reproduce_folder_base}/{repo_name}/{task.task_id}/reproduce_outputs.jsonl'
             args.last_step_loc = f'{args.localize_folder}/{repo_name}/{task.task_id}/localize_patch_outputs.jsonl'

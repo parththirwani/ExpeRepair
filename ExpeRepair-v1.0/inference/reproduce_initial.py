@@ -109,6 +109,9 @@ def reproduce(tasks, args):
         config.memory_mode = args.memory_mode
     with open('swe_regression_test.json', 'r') as f:
         regression_dict = json.load(f)
+    # Phase 3: load created_at for stream-order cutoff
+    with open(args.tasks_map) as f:
+        tasks_map_created = {k: v.get('created_at', '') for k, v in json.load(f).items()}
 
     if args.num_threads == 1:
         for task in tqdm(tasks, colour="MAGENTA"):
@@ -117,6 +120,8 @@ def reproduce(tasks, args):
                 test_file_path = file_list[0]
             else:
                 test_file_path = None
+
+            config.current_created_at = tasks_map_created.get(task.task_id, '')
             reproduce_instance(task, args, None, test_file_path=test_file_path)
     else:
         assert 1 == 2
