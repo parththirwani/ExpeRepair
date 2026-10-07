@@ -12,6 +12,13 @@ import os
 from pathlib import Path
 from typing import Any
 
+_COUNTERS: dict[str, int] = {}
+
+
+def _next_seq(task_dir: str) -> int:
+    _COUNTERS[task_dir] = _COUNTERS.get(task_dir, 0) + 1
+    return _COUNTERS[task_dir]
+
 
 def _ensure_store_dir(task_dir: str, tier: str) -> Path:
     p = Path(task_dir, tier)
@@ -20,14 +27,12 @@ def _ensure_store_dir(task_dir: str, tier: str) -> Path:
 
 
 def append_entry(task_dir: str, tier: str, entry: dict[str, Any]):
-    """Append one JSON line to the given tier file."""
     path = _ensure_store_dir(task_dir, tier)
     with open(path, "a") as f:
         f.write(json.dumps(entry, default=str) + "\n")
 
 
 def load_tier(task_dir: str, tier: str) -> list[dict[str, Any]]:
-    """Load all entries from a tier file. Returns empty list if missing."""
     path = Path(task_dir, tier)
     if not path.exists():
         return []
@@ -35,21 +40,23 @@ def load_tier(task_dir: str, tier: str) -> list[dict[str, Any]]:
 
 
 def promote(entry: dict[str, Any], task_dir: str, reasons: list[str]):
-    """Write the entry to both all.jsonl (with gate_decision) and promoted.jsonl."""
     entry["gate_decision"] = "promoted"
     entry["gate_reasons"] = reasons
+    entry["gate_seq"] = _next_seq(task_dir)
     append_entry(task_dir, "all.jsonl", entry)
     gate_entry = {k: v for k, v in entry.items() if k != "gate_reasons"}
     gate_entry["gate_decision"] = "promoted"
+    gate_entry["gate_seq"] = entry["gate_seq"]
     append_entry(task_dir, "promoted.jsonl", gate_entry)
 
 
 def quarantine(entry: dict[str, Any], task_dir: str, reasons: list[str]):
-    """Write the entry to all.jsonl (with gate_decision + reasons) and quarantine.jsonl."""
     entry["gate_decision"] = "quarantined"
     entry["gate_reasons"] = reasons
+    entry["gate_seq"] = _next_seq(task_dir)
     append_entry(task_dir, "all.jsonl", entry)
     quarantine_entry = {k: v for k, v in entry.items() if k != "gate_reasons"}
     quarantine_entry["gate_decision"] = "quarantined"
     quarantine_entry["gate_reasons"] = reasons
+    quarantine_entry["gate_seq"] = entry["gate_seq"]
     append_entry(task_dir, "quarantine.jsonl", quarantine_entry)

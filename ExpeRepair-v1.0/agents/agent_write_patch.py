@@ -1137,7 +1137,6 @@ def get_experiences_patch(issue_description, patch_content, repo_name, task_dir,
             prompt_exps.append(temp_exp)
             prompt_scores.append(temp_score)
 
-    # Phase 3: log retrieval results for attack measurement
     try:
         query_task_id = ""
         query_dir = Path(task_dir)
@@ -1147,6 +1146,8 @@ def get_experiences_patch(issue_description, patch_content, repo_name, task_dir,
             "query_task_id": query_task_id,
             "mode": "patch",
             "retrieved_ids": [e.get("issue_description", "")[:80] for e in prompt_exps],
+            "retrieved_seq": [e.get("gate_seq", "") for e in prompt_exps],
+            "retrieved_source": [e.get("source_task_id", "") for e in prompt_exps],
             "retrieved_scores": prompt_scores,
             "num_candidates": len(filter_kb),
         }
@@ -1189,7 +1190,8 @@ def save_experiences_patch(repo_name, task_dir, issue_description, exp_name):
             if line['issue_description'].strip() == issue_description.strip():
                 continue
             exps = line['exps']
-            success_exps = filter_patch_experiences(line['issue_description'], exps)
+            source_task_id = line.get('task_id', '')
+            success_exps = filter_patch_experiences(line['issue_description'], exps, source_task_id=source_task_id)
             total_exps.extend(success_exps)
     print("success_exps =", len(total_exps))
     final_dir = Path('/'.join(task_dir.split('/')[:-2]), f'{repo_name}_{exp_name}.jsonl')
@@ -1251,26 +1253,18 @@ def retrieve_examples_with_weights(
 
 
 
-def filter_patch_experiences(issue_description, experiences):
-    """
-    Filters successful experiences by considering each entry's `new_returncode` and the following entries in sequence.
-
-    Parameters:
-        experiences (list): A list of experience dictionaries.
-
-    Returns:
-        list: A list of successful experiences.
-    """
+def filter_patch_experiences(issue_description, experiences, source_task_id=""):
     successful_experiences = []
 
     for i in range(len(experiences)):
         if experiences[i]["old_patch"] != "":
-            # Check if any subsequent entry has new_returncode == 0
-            for j in range(i, len(experiences)):  # Start from the current entry
+            for j in range(i, len(experiences)):
                 new_result = experiences[i].get("new_result")
                 if new_result is True:
                     successful_experiences.append({
                         "issue_description": issue_description,
+                        "source_task_id": source_task_id,
+                        "gate_seq": experiences[j].get("gate_seq", experiences[i].get("gate_seq", "")),
                         "task_id": experiences[i].get("task_id", ""),
                         "oracle_F2P": experiences[i].get("oracle_F2P", []),
                         "oracle_P2P": experiences[i].get("oracle_P2P", []),
@@ -1279,7 +1273,7 @@ def filter_patch_experiences(issue_description, experiences):
                         "new_patch": experiences[j]["new_patch"],
                         "new_result": experiences[j]["new_result"],
                     })
-                    break  # Stop searching once a match is found for the current entry
+                    break
 
     return successful_experiences
 

@@ -368,20 +368,35 @@ class TestAgent:
 
             feedback_handles = self._select_feedback_handles(num_feedbacks)
 
-            if test_content == "" or repro_result == "":
-                ########## todo retrieve experiences and add them to feedback
-                retrieved_exps, sim_scores = get_experiences(
-                    self.task.get_issue_statement(), "", "",
-                    self.task.repo_name.split('/')[-1], self.task_dir,
-                    exp_name='reproduce_experiences'
-                )
-                if retrieved_exps:
-                    retrieved_example = retrieved_exps[0]['new_test'].strip()
-                else:
-                    retrieved_example = "Not available"
+            from memory_gate.gate import MemoryGateMode
 
-                response, test_content, thread = self._call_api_reproduce_exp_initial(feedback_handles,
-                                                                                             retrieved_example)
+            if test_content == "" or repro_result == "":
+                import config as _cfg
+
+                if _cfg.memory_mode == MemoryGateMode.FACTS:
+                    response, test_content, thread = self._call_api_reproduce_facts_only(feedback_handles)
+                else:
+                    ########## todo retrieve experiences and add them to feedback
+                    retrieved_exps, sim_scores = get_experiences(
+                        self.task.get_issue_statement(), "", "",
+                        self.task.repo_name.split('/')[-1], self.task_dir,
+                        exp_name='reproduce_experiences'
+                    )
+                    if retrieved_exps:
+                        retrieved_example = retrieved_exps[0]['new_test'].strip()
+                    else:
+                        retrieved_example = "Not available"
+
+                    failure_facts = load_failure_facts(
+                        self.task.repo_name.split('/')[-1],
+                        self.task_dir,
+                        current_issue=self.task.task_id
+                    )
+                    if failure_facts:
+                        retrieved_example = failure_facts + "\n\n" + retrieved_example
+
+                    response, test_content, thread = self._call_api_reproduce_exp_initial(feedback_handles,
+                                                                                                  retrieved_example)
             else:
                 response, test_content, thread = self._call_api_reproduce(feedback_handles)
 
@@ -680,6 +695,52 @@ Note: The current runtime environment and its package versions cannot be modifie
         thread.add_user(prefix_prompt + REPRODUCE_PROMPT_W_EXP.format(retrieved_example=retrieved_example))
         if not history_handles:
             print_acr(prefix_prompt + REPRODUCE_PROMPT_W_EXP.format(retrieved_example=retrieved_example))
+
+        response, *_ = common.SELECTED_MODEL.call(thread.to_msg())
+
+        return response, self.convert_response_to_test(response), thread
+
+
+    def _call_api_reproduce_facts_only(
+        self, history_handles: list[TestHandle] | None = None
+    ) -> tuple[str, str | None, MessageThread]:
+        history_handles = history_handles or []
+
+        failure_facts = load_failure_facts(
+            self.task.repo_name.split('/')[-1],
+            self.task_dir,
+            current_issue=self.task.task_id
+        )
+
+        thread = self._construct_init_thread_exp(failure_facts)
+
+        if self.original_test_file:
+            file_content = self.backend.get_file_content(self.original_test_file)[0]
+            file_content = '\n'.join(file_content.split('\n')[:1000])
+            regression_prompt = "Here is an existing project test file:\n"
+            regression_prompt += "```\n" + file_content.strip() + "\n```"
+            thread.add_user(regression_prompt)
+
+        prefix_prompt = (
+            "Please analyze the issue description to understand the core problem. Based on your analysis, write a standalone Python script `test.py` to reproduce the issue. "
+            "The script will be put in the root directory of the project and executed by `python3 test.py`.")
+
+        thread.add_user(prefix_prompt + REPRODUCE_PROMPT)
+        if not history_handles:
+            print_acr(prefix_prompt + REPRODUCE_PROMPT)
+
+        try:
+            query_task_id = self.task_dir.split('/')[-1] if self.task_dir else ""
+            log_entry = {
+                "query_task_id": query_task_id,
+                "mode": "facts",
+                "fact_count": len(failure_facts.split("\n")) if failure_facts else 0,
+            }
+            log_path = Path(self.task_dir, "retrieval_log.jsonl")
+            with open(log_path, "a") as _lf:
+                _lf.write(json.dumps(log_entry) + "\n")
+        except Exception:
+            pass
 
         response, *_ = common.SELECTED_MODEL.call(thread.to_msg())
 
@@ -1010,7 +1071,6 @@ def get_experiences(issue_description, test_content, repro_result, repo_name, ta
             prompt_exps.append(temp_exp)
             prompt_scores.append(temp_score)
 
-    # Phase 3: log retrieval results for attack measurement
     try:
         query_task_id = ""
         query_dir = Path(task_dir)
@@ -1020,6 +1080,8 @@ def get_experiences(issue_description, test_content, repro_result, repo_name, ta
             "query_task_id": query_task_id,
             "mode": "reproduce",
             "retrieved_ids": [e.get("issue_description", "")[:80] for e in prompt_exps],
+            "retrieved_seq": [e.get("gate_seq", "") for e in prompt_exps],
+            "retrieved_source": [e.get("source_task_id", "") for e in prompt_exps],
             "retrieved_scores": prompt_scores,
             "num_candidates": len(filter_kb),
         }
@@ -1218,31 +1280,66 @@ def filter_returncode_experiences(issue_description, experiences):
     return successful_experiences
 
 
-def filter_successful_experiences(issue_description, experiences):
-    """
-    Filters successful experiences by considering each entry's `new_returncode` and the following entries in sequence.
+def load_failure_facts(repo_name, task_dir, current_issue=None):
+    """Load failure facts from lessons.jsonl files in the task directory.
 
-    Parameters:
-        experiences (list): A list of experience dictionaries.
-
-    Returns:
-        list: A list of successful experiences.
+    Returns a formatted string for the {summarized_rules} prompt slot.
+    Respects the stream-order cutoff from config.current_created_at.
     """
+    import config as _cfg
+    exp_directory = '/'.join(task_dir.split('/')[:-1])
+    current_time = _cfg.current_created_at
+    facts = []
+    if not os.path.isdir(exp_directory):
+        return ""
+    for task_id in sorted(os.listdir(exp_directory)):
+        lessons_path = os.path.join(exp_directory, task_id, "lessons.jsonl")
+        if not os.path.isfile(lessons_path):
+            continue
+        if current_issue and task_id == current_issue:
+            continue
+        with open(lessons_path) as f:
+            for line in f:
+                try:
+                    fact = json.loads(line)
+                    entry_time = fact.get("time", "")
+                    if current_time and entry_time and entry_time >= current_time:
+                        continue
+                    facts.append(fact)
+                except json.JSONDecodeError:
+                    pass
+    if not facts:
+        return ""
+    seen = set()
+    lines = []
+    for fact in facts:
+        exc = fact.get("exception_type", "unknown")
+        repo = fact.get("repo", repo_name)
+        tid = fact.get("task_id", "")
+        key = f"{tid}_{exc}"
+        if key in seen:
+            continue
+        seen.add(key)
+        lines.append(f"- Task {tid}: avoid tests that raise {exc}")
+    return "Failure facts from previous issues:\n" + "\n".join(lines[:15])
+
+
+def filter_successful_experiences(issue_description, experiences, source_task_id=""):
     successful_experiences = []
 
     for i in range(len(experiences)):
         old_check_repro = experiences[i].get("old_check_repro", {})
         old_correct = old_check_repro["if-reproduce"] if old_check_repro != "" else None
 
-        # Check the current entry's old_returncode
         if old_correct == "NO" or experiences[i]["old_test"] == "":
-            # Check if any subsequent entry has new_returncode == 0
-            for j in range(i, len(experiences)):  # Start from the current entry
+            for j in range(i, len(experiences)):
                 new_check_repro = experiences[j].get("new_check_repro", {})
                 new_correct = new_check_repro["if-reproduce"]
                 if new_correct == "YES":
                     successful_experiences.append({
                         "issue_description": issue_description,
+                        "source_task_id": source_task_id,
+                        "gate_seq": experiences[j].get("gate_seq", ""),
                         "old_test": experiences[i]["old_test"],
                         "old_exec_result": experiences[i]["old_exec_result"],
                         "old_returncode": experiences[i]["old_returncode"],
@@ -1252,7 +1349,7 @@ def filter_successful_experiences(issue_description, experiences):
                         "new_returncode": experiences[j]["new_returncode"],
                         "new_check_repro": experiences[j]["new_check_repro"]
                     })
-                    break  # Stop searching once a match is found for the current entry
+                    break
 
     return successful_experiences
 
@@ -1287,7 +1384,8 @@ def save_experiences(repo_name, task_dir, issue_description, exp_name):
             if line['issue_description'].strip() == issue_description.strip():
                 continue
             exps = line['exps']
-            success_exps = filter_successful_experiences(line['issue_description'], exps)
+            source_task_id = line.get('task_id', '')
+            success_exps = filter_successful_experiences(line['issue_description'], exps, source_task_id=source_task_id)
             total_exps.extend(success_exps)
     print("success_exps =", len(total_exps))
     final_dir = Path('/'.join(task_dir.split('/')[:-2]), f'{repo_name}_{exp_name}.jsonl')

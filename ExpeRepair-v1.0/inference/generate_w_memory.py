@@ -282,7 +282,7 @@ def generate(tasks, all_setup, all_taskinfo, args):
     common.set_model(args.model)
     common.set_gpto4_model()
     # common.set_gpto3_model()
-    if hasattr(args, 'memory_mode') and args.memory_mode in {'none', 'baseline', 'gated', 'gated-provenance', 'gated-execution'}:
+    if hasattr(args, 'memory_mode') and args.memory_mode in {'none', 'baseline', 'gated', 'gated-provenance', 'gated-execution', 'facts'}:
         config.memory_mode = args.memory_mode
 
     with open('swe_regression_test.json', 'r') as f:
@@ -461,7 +461,7 @@ def main():
         "--memory-mode",
         type=str,
         default="baseline",
-        choices=["none", "baseline", "gated", "gated-provenance", "gated-execution"],
+        choices=["none", "baseline", "gated", "gated-provenance", "gated-execution", "facts"],
         help="Memory gate mode.",
     )
 

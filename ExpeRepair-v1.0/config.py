@@ -33,7 +33,7 @@ only_save_sbfl_result: bool = False
 # A special mode to only generate reproducer tests and exit
 only_reproduce: bool = False
 
-# Memory gate mode: "none", "baseline", "gated", "gated-provenance", "gated-execution"
+# Memory gate mode: "none", "baseline", "gated", "gated-provenance", "gated-execution", "facts"
 memory_mode: str = "baseline"
 
 # Stream-order cutoff for memory retrieval (ISO date, e.g. "2019-01-30T13:13:20Z")

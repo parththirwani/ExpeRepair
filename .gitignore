@@ -1,11 +1,45 @@
+# --- secrets: never commit ---
+.env
+.env.*
+
+# --- python ---
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# --- datasets ---
+data/
+
+# --- experiment outputs (keep only committed *_example dirs) ---
+ExpeRepair-v1.0/results/*
+!ExpeRepair-v1.0/results/*_example/
+ExpeRepair-v1.0/label_noise_report.json
+ExpeRepair-v1.0/phase3_report.json
+ExpeRepair-v1.0/phase4_report.json
+
+# --- testbed artifacts ---
 testbed/lite_testbed/
 testbed/repo_structure/
 testbed/django.git/
+testbed/lite_setup_result/
 testbed/*.log
-data/
-ExpeRepair-v1.0/results/smoke_*/
-ExpeRepair-v1.0/results/phase0_*/
-ExpeRepair-v1.0/results/phase0_preds.jsonl
-ExpeRepair-v1.0/label_noise_report.json
+*.log
+
+# --- IDE / OS / tooling ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+.cora/

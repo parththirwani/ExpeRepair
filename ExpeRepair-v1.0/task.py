@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from abc import ABC, abstractmethod
 from collections.abc import Generator
@@ -179,6 +180,24 @@ class SweTask(Task):
                     raise RuntimeError(f"Command {cmd} failed.")
 
             # (2) install
+            # Work around pip egg-link conflict (pip<21 bug):
+            # Remove the old egg-link and pth entry before installing
+            # so pip doesn't try to uninstall a different path.
+            site_pkg = os.path.join(
+                os.environ.get("CONDA_PREFIX", "/home/too_geeky/anaconda3/envs/" + task.env_name),
+                "lib", "python3.6", "site-packages"
+            )
+            for f in ["Django.egg-link", "Django.pth"]:
+                p = os.path.join(site_pkg, f)
+                if os.path.exists(p):
+                    os.remove(p)
+            pth_path = os.path.join(site_pkg, "easy-install.pth")
+            if os.path.exists(pth_path):
+                lines = open(pth_path).readlines()
+                with open(pth_path, "w") as f:
+                    for line in lines:
+                        if "setup_django" not in line:
+                            f.write(line)
             cp = apputils.run_string_cmd_in_conda(
                 task.install_cmd,
                 task.env_name,
